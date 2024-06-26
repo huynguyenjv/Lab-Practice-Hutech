@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title th:text="${title} ?: 'Your Cart'">Your Cart</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+<section layout:fragment="content" class="container mt-3">
+    <h1>Your Cart</h1>
+    <div th:if="${cartItems.isEmpty()}" class="alert alert-info">Your cart is
+        empty.</div>
+    <table class="table" th:unless="${cartItems.isEmpty()}">
+        <thead class="table-light">
+        <tr>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="tbody">
+        <tr th:each="item : ${cartItems}">
+            <td th:text="${item.product.name}"></td>
+            <td>
+                <input class="form-control d-inline-block" type="number" name="quantity" th:value="${item.quantity}" th:data-cart="${item.product.id}" th:id="${item.product.id}">
+            </td>
+            <td th:text="${item.quantity*item.product.price}"></td>
+            <td>
+                <a th:href="@{/cart/remove/{productId}(productId=${item.product.id})}" class="btn btndanger btn-sm">Remove</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="mt-3">
+        <a th:href="@{/cart/clear}" class="btn btn-secondary">Clear Cart</a>
+        |
+        <a th:href="@{/order/checkout}" class="btn btn-primary mb-3">Check Out</a>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sử dụng event delegation trên tbody
+            $('#tbody').on('change', 'input[name="quantity"]', function(e) {
+                var productId = this.id;  // Sử dụng "this" để tham chiếu đến input hiện tại
+                var quantity = this.value;
+                console.log('Quantity changed: ' + productId + ' ' + quantity);
+
+                $.ajax({
+                    url: '/cart/api/update',
+                    type: 'POST',
+                    data: {
+                        productId: productId,
+                        quantity: quantity
+                    },
+                    success: function(response) {
+                        console.log('Cập nhật thành công:', response);
+                        let cartHtml = '';
+                        let cartItems = response;
+                        $.each(cartItems, function(index, item) {
+                            cartHtml += `<tr>
+                        <td>${item.productName}</td>
+                        <td>
+<input class="form-control d-inline-block" type="number" name="quantity" value="${item.quantity}" data-cart="${item.productId}" id="${item.productId}">
+                        </td>
+                        <td>${item.quantity * item.price}</td>
+                        <td>
+                            <a href="/cart/remove/${item.productId}" class="btn btn-danger btn-sm">Remove</a>
+                        </td>
+                    </tr>`;
+                        });
+                        $('#tbody').html(cartHtml); // Cập nhật lại tbody
+
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Lỗi:', error);
+                    }
+                });
+            });
+        });
+    </script>
+</section>
+</body>
+</html>
