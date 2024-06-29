@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/api/products")
@@ -49,5 +51,15 @@ public class ProductApiController {
                 .orElseThrow(() -> new RuntimeException("Product not found on :: " + id));
         productService.deleteProductById(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/search")
+    public List<ProductResponse> findProductsByName(
+            @RequestParam(value = "name" , name = "name") Optional<String> name,
+            @RequestParam(value = "priceMin" , name = "priceMin") Optional<Double> priceMin,
+            @RequestParam(value = "priceMax" , name = "priceMax") Optional<Double> priceMax
+    ) {
+        List<Product> listProduct = productService.findProductsByName(name, priceMin, priceMax);
+        return listProduct.stream().map(ProductResponse::new).toList();
     }
 }

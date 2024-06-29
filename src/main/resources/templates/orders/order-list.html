@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}" lang="en">
+<head>
+    <title th:text="${title} ?: 'Order List'">Order List</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+<section layout:fragment="content">
+    <form method="get" th:action="@{/orders}" onsubmit="event.preventDefault()">
+        <label for="month" class="mb-3">Month:</label>
+        <select class="form-select mb-3" id="month" name="month">
+            <option value="" th:if="${selectedMonth == null}" th:text="'Select Month'"></option>
+            <option th:each="month : ${months}"
+                    th:value="${month}"
+                    th:text="${month}"
+                    th:selected="${month} == ${selectedMonth}"></option>
+        </select>
+
+        <label for="year" class="mb-3">Year:</label>
+        <select class="form-select mb-3" id="year" name="year">
+            <option value="" th:if="${selectedYear == null}" th:text="'Select Year'"></option>
+            <option th:each="year : ${years}"
+                    th:value="${year}"
+                    th:text="${year}"
+                    th:selected="${year} == ${selectedYear}"></option>
+        </select>
+
+        <button type="submit" class="btn btn-success">Search</button>
+    </form>
+    <h1>Orders List</h1>
+    <table class="table table-bordered table-hover" style="text-align: center">
+        <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Notes</th>
+            <th>Payment Method</th>
+            <th>Quantity Order</th>
+            <th>Total</th>
+            <th>View Details</th>
+        </tr>
+        </thead>
+        <tbody id="table">
+        <tr th:each="order : ${orders}">
+            <td th:text="${order.id}"></td>
+            <td th:text="${order.customerName}"></td>
+            <td th:text="${order.customerAddress}"></td>
+            <td th:text="${order.customerPhone}"></td>
+            <td th:text="${order.customerEmail}"></td>
+            <td th:text="${order.truncateNotes()}"></td>
+            <td style="text-align: center" th:text="${order.customerPaymentMethod}"></td>
+            <td style="text-align: center" th:text="${order.getOrderDetails()?.size()}"></td>
+            <td style="text-align: center" th:text="${order.total()}"></td>
+            <td>
+                <!-- Hiển thị nút sửa và xóa chỉ dành cho người dùng ADMIN -->
+                <a th:href="@{/order/{id}(id=${order.id})}"
+                   class="btn btn-success btn-sm">View Detail</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            function fetchOrders() {
+                var month = $('#month').val();
+                var year = $('#year').val();
+
+                $.ajax({
+                    url: 'api/order/search',
+                    type: 'GET',
+                    data: {
+                        month: month,
+                        year: year
+                    },
+                    success: function(data) {
+                        var tableBody = $('#table');
+                        tableBody.empty();
+                        data.forEach(function(order) {
+                            var row = '<tr>' +
+                                '<td>' + order.id + '</td>' +
+                                '<td>' + order.customerName + '</td>' +
+                                '<td>' + order.customerAddress + '</td>' +
+                                '<td>' + order.customerPhone+ '</td>' +
+                                '<td>' + order.customerEmail + '</td>' +
+                                '<td>' + order.truncateNotes + '</td>' +
+                                '<td style="text-align: center">' + order.customerPaymentMethod + '</td>' +
+                                '<td style="text-align: center">' + (order.orderDetails ? order.orderDetails.length : 0) + '</td>' +
+                                '<td style="text-align: center">' + order.total + '</td>' +
+                                '<td>' +
+                                '<a href="/order/' + order.id + '" class="btn btn-success btn-sm">View Detail</a>' +
+                                '</td>' +
+                                '</tr>';
+                            tableBody.append(row);
+                        });
+                    }
+                });
+            }
+
+            $('#month, #year').change(fetchOrders);
+
+            fetchOrders(); // Fetch all orders on page load
+        })
+    </script>
+</section>
+</body>
+</html>

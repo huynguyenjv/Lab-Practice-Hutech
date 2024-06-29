@@ -80,4 +80,12 @@ public class ProductController {
         model.addAttribute("_csrfHeader", csrf.getHeaderName());
         return "/products/api";
     }
+
+    @GetMapping("/search")
+    public String searchProduct(HttpServletRequest request, Model model) {
+//        CsrfToken csrf = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+//        model.addAttribute("csrfToken", csrf.getToken());
+//        model.addAttribute("_csrfHeader", csrf.getHeaderName());
+        return "/products/search-product";
+    }
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,5 +45,17 @@ public class OrderService {
         cartService.clearCart();
 
         return order;
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    public Order getOrderById(String id) {
+        return orderRepository.findById(id).orElse(null);
+    }
+
+    public List<Order> searchOrder(Optional<Integer> month, Optional<Integer> year) {
+        return orderRepository.findOrdersByYearAndMonth(month.orElse(null), year.orElse(null));
     }
 }

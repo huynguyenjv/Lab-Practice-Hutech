@@ -1,6 +1,7 @@
 package fit.hutech.huynguyen.services;
 
 import fit.hutech.huynguyen.entities.Product;
+import fit.hutech.huynguyen.entities.ProductResponse;
 import fit.hutech.huynguyen.repositories.ProductRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
@@ -49,5 +50,9 @@ public class ProductService {
             throw new IllegalStateException("Product with ID " + id + " does not exist.");
         }
         productRepository.deleteById(id);
+    }
+
+    public List<Product> findProductsByName(Optional<String> name, Optional<Double> priceMin, Optional<Double> priceMax) {
+        return productRepository.findProductsByName(Optional.of(name.orElse("")), Optional.of(priceMin.orElse(0.0)), Optional.of( priceMax.orElse(0.0)));
     }
 }
